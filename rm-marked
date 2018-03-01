@@ -1,0 +1,5 @@
+#!/bin/bash
+# mark the list manually before calling this script
+# mark file to be deleted, insert x at beginning of the line
+set -e
+cat list | grep '^x ' | sed 's/^.* | //' | xargs -I {} rm "{}"

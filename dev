@@ -1,4 +1,6 @@
 #!/bin/bash
 set -e
 erlc similar.erl
-erl -noshell -s similar main $@ -s init stop
+[ -f log ] && bk log
+erl -noshell -s similar main $@ -s init stop > >(tee log >&2) | grep -v '^Scan' | tail -n +3 > list
+echo "saved to ./list"

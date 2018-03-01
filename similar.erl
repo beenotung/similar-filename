@@ -33,11 +33,24 @@ main(Args) ->
   end.
 
 runDir(File) ->
-  Xs = scanDir(File, []),
-  lists:foreach(fun(X) ->
-    {Y, Diff} = getClosest(X, Xs),
-    io:format("~p~n", [#{x=>X#file.filename, y=>Y#file.filename, diff=>Diff}])
-                end, Xs),
+  List1 = scanDir(File, []),
+  io:format("finding closest filename"),
+  List2 = lists:map(fun(X) ->
+    io:format("."),
+    {Y, Diff} = getClosest(X, List1),
+    {X, Y, Diff}
+                    end, List1),
+  io:format("~nsorting...~n"),
+  List3 = lists:sort(fun({_, _, A}, {_, _, B}) -> A < B end, List2),
+  lists:foreach(fun({X, Y, Diff}) ->
+    io:format("~.3f~n  ~s | ~s~n  ~s | ~s~n", [
+      Diff
+      , unicode:characters_to_binary(X#file.filename)
+      , unicode:characters_to_binary(X#file.path)
+      , unicode:characters_to_binary(Y#file.filename)
+      , unicode:characters_to_binary(Y#file.path)
+    ])
+                end, List3),
   ok.
 
 scan(File, Name, Acc) ->
@@ -59,7 +72,7 @@ scanFile(File, FileName, Acc) ->
 
 
 scanDir(File, Acc0) ->
-  io:format("Scan Dir: ~p~n", [File]),
+  io:format("Scan Dir: ~s~n", [unicode:characters_to_binary(File)]),
   {ok, Fs} = file:list_dir(File),
   lists:foldl(fun(F, Acc) -> scan(File ++ "/" ++ F, F, Acc) end, Acc0, Fs).
 
@@ -83,11 +96,12 @@ compareDigest(A, B) ->
 getClosest(X, Acc) ->
   getClosest(X, {X, 0}, Acc).
 
-getClosest(X, {Y, Diff}, []) ->
+getClosest(_X, {Y, Diff}, []) ->
   {Y, Diff};
 getClosest(X, Y, [X | Acc]) ->
   getClosest(X, Y, Acc);
 getClosest(X, {Y, Y_Diff}, [Z | Acc]) ->
+%%  io:format("~p~n", [#{x=>X, y=>Y}]),
   Z_Diff = compareDigest(X#file.digest, Z#file.digest) / (X#file.length + Z#file.length),
   C = if
         X == Y ->
@@ -101,6 +115,7 @@ getClosest(X, {Y, Y_Diff}, [Z | Acc]) ->
 
 getName(S) ->
   case string:split(S, ".", trailing) of
+    [[], _] -> S;
     [X, _] -> X;
     [X] -> X
   end.
