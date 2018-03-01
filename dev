@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e
+erlc similar.erl
+erl -noshell -s similar main $@ -s init stop
