@@ -40,8 +40,20 @@ runDir(File) ->
     {Y, Diff} = getClosest(X, List1),
     {X, Y, Diff}
                     end, List1),
-  io:format("~nsorting...~n"),
-  List3 = lists:sort(fun({_, _, A}, {_, _, B}) -> A < B end, List2),
+  io:format("~n"),
+  io:format("de-duplicating...~n"),
+  Dict1 = lists:foldl(fun({X, Y, _Diff} = C, Acc) ->
+    Key = if
+            X#file.path < Y#file.path ->
+              {X#file.path, Y#file.path};
+            true ->
+              {Y#file.path, X#file.path}
+          end,
+    Acc#{Key=>C}
+                      end, #{}, List2),
+  List3 = maps:values(Dict1),
+  io:format("sorting...~n"),
+  List4 = lists:sort(fun({_, _, A}, {_, _, B}) -> A < B end, List3),
   lists:foreach(fun({X, Y, Diff}) ->
     io:format("~.3f~n  ~s | ~s~n  ~s | ~s~n", [
       Diff
@@ -50,7 +62,7 @@ runDir(File) ->
       , unicode:characters_to_binary(Y#file.filename)
       , unicode:characters_to_binary(Y#file.path)
     ])
-                end, List3),
+                end, List4),
   ok.
 
 scan(File, Name, Acc) ->

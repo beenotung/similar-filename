@@ -1,6 +1,6 @@
 *.dump
 *.beam
 .idea/
-list
+list.txt
 log
 log.bk

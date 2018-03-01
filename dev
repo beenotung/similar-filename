@@ -2,5 +2,5 @@
 set -e
 erlc similar.erl
 [ -f log ] && bk log
-erl -noshell -s similar main $@ -s init stop > >(tee log >&2) | grep -v '^Scan' | tail -n +3 > list
-echo "saved to ./list"
+erl -noshell -s similar main $@ -s init stop | tee log | tee /dev/stderr | grep -v '^Scan' | tail -n +4 > list.txt
+echo "saved to ./list.txt"
