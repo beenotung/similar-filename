@@ -1,0 +1,7 @@
+= similar (cli-util)
+
+Find files of similar name recursively.
+
+== Todo
+
+- [ ] package for distribution
