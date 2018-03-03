@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
-./similar-name.escript > list.txt
+"$(dirname $0)/similar-name.escript" > list.txt
 echo "Saved to list.txt"
