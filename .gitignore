@@ -2,5 +2,4 @@
 *.beam
 .idea/
 list.txt
-log
-log.bk
+*.log

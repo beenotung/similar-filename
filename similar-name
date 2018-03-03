@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e
+./similar-name.escript > list.txt
+echo "Saved to list.txt"

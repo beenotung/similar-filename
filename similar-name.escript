@@ -1,5 +1,4 @@
--module(similar).
-
+#!/usr/bin/env escript
 -export([main/0, main/1]).
 
 -record(file, {
@@ -34,14 +33,14 @@ main(Args) ->
 
 runDir(File) ->
   List1 = scanDir(File, []),
-  io:format("finding closest filename"),
+  io:format(standard_error, "finding closest filename", []),
   List2 = lists:map(fun(X) ->
-    io:format("."),
+    io:format(standard_error, ".", []),
     {Y, Diff} = getClosest(X, List1),
     {X, Y, Diff}
                     end, List1),
-  io:format("~n"),
-  io:format("de-duplicating...~n"),
+  io:format(standard_error, "~n", []),
+  io:format(standard_error, "de-duplicating...~n", []),
   Dict1 = lists:foldl(fun({X, Y, _Diff} = C, Acc) ->
     Key = if
             X#file.path < Y#file.path ->
@@ -52,7 +51,7 @@ runDir(File) ->
     Acc#{Key=>C}
                       end, #{}, List2),
   List3 = maps:values(Dict1),
-  io:format("sorting...~n"),
+  io:format(standard_error, "sorting...~n", []),
   List4 = lists:sort(fun({_, _, A}, {_, _, B}) -> A < B end, List3),
   lists:foreach(fun({X, Y, Diff}) ->
     io:format("~.3f~n  ~s | ~s~n  ~s | ~s~n", [
@@ -84,7 +83,7 @@ scanFile(File, FileName, Acc) ->
 
 
 scanDir(File, Acc0) ->
-  io:format("Scan Dir: ~s~n", [unicode:characters_to_binary(File)]),
+  io:format(standard_error, "Scan Dir: ~s~n", [unicode:characters_to_binary(File)]),
   {ok, Fs} = file:list_dir(File),
   lists:foldl(fun(F, Acc) -> scan(File ++ "/" ++ F, F, Acc) end, Acc0, Fs).
 

@@ -1,5 +1,6 @@
 #!/bin/bash
-# mark the list manually before calling this script
-# mark file to be deleted, insert x at beginning of the line
+# post script of similar-name.escript
+## mark the list manually before calling this script
+## mark file to be deleted, insert x at beginning of the line
 set -e
 cat list.txt | grep '^x ' | sed 's/^.* | //' | xargs -I {} rm "{}"
