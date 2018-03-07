@@ -34,11 +34,13 @@ main(Args) ->
 runDir(File) ->
   List1 = scanDir(File, []),
   io:format(standard_error, "finding closest filename", []),
-  List2 = lists:map(fun(X) ->
-    io:format(standard_error, ".", []),
+  List2 = par_map(fun(X) ->
+%%  List2 = lists:map(fun(X) ->
+    io:format(standard_error, ",", []),
     {Y, Diff} = getClosest(X, List1),
+    io:format(standard_error, ".", []),
     {X, Y, Diff}
-                    end, List1),
+                  end, List1),
   io:format(standard_error, "~n", []),
   io:format(standard_error, "de-duplicating...~n", []),
   Dict1 = lists:foldl(fun({X, Y, _Diff} = C, Acc) ->
@@ -94,15 +96,12 @@ digestWord(S) ->
               end, #{}, S).
 
 compareDigest(A, B) ->
-  sets:fold(
-    fun(C, Acc) ->
-      Acc + abs(maps:get(C, A, 0) - maps:get(C, B, 0))
-    end
-    , 0
-    , sets:union(
-      sets:from_list(maps:keys(A))
-      , sets:from_list(maps:keys(B))
-    )).
+  maps:fold(
+    fun(K, V, Acc) ->
+      Acc + abs(V - maps:get(K, B, 0))
+    end,
+    0, A
+  ).
 
 getClosest(X, Acc) ->
   getClosest(X, {X, 0}, Acc).
@@ -129,4 +128,19 @@ getName(S) ->
     [[], _] -> S;
     [X, _] -> X;
     [X] -> X
+  end.
+
+par_map(Func, List) ->
+  Pid = self(),
+  Pids = lists:map(
+    fun(X) -> spawn(fun() -> Pid ! {self(), Func(X)} end) end,
+    List
+  ),
+  par_collect(Pids).
+
+par_collect([]) ->
+  [];
+par_collect([H | T]) ->
+  receive {H, X} ->
+    [X | par_collect(T)]
   end.
