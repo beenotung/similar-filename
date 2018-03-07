@@ -96,12 +96,19 @@ digestWord(S) ->
               end, #{}, S).
 
 compareDigest(A, B) ->
+  A_Size = maps:size(A),
+  B_Size = maps:size(B),
+  {Long, Short} =
+    if
+      A_Size > B_Size -> {A, B};
+      true -> {B, A}
+    end,
   maps:fold(
     fun(K, V, Acc) ->
-      Acc + abs(V - maps:get(K, B, 0))
+      Acc + abs(V - maps:get(K, Short, 0))
     end,
-    0, A
-  ).
+    0, Long
+  ) + abs(A_Size - B_Size).
 
 getClosest(X, Acc) ->
   getClosest(X, {X, 0}, Acc).
