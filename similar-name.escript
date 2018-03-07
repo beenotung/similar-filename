@@ -103,25 +103,35 @@ compareDigest(A, B) ->
     0, A
   ).
 
+getClosest(X, []) ->
+  {X, 0};
 getClosest(X, Acc) ->
-  getClosest(X, {X, 0}, Acc).
-
-getClosest(_X, {Y, Diff}, []) ->
-  {Y, Diff};
-getClosest(X, Y, [X | Acc]) ->
-  getClosest(X, Y, Acc);
-getClosest(X, {Y, Y_Diff}, [Z | Acc]) ->
-%%  io:format("~p~n", [#{x=>X, y=>Y}]),
-  Z_Diff = compareDigest(X#file.digest, Z#file.digest) / (X#file.length + Z#file.length),
-  C = if
+  Y_YDiff_List =
+%%    par_map(fun(Z) ->
+  lists:map(fun(Z) ->
+    Z_Diff =
+      if
+        Z#file.name == X#file.name ->
+          0;
+        true ->
+          compareDigest(X#file.digest, Z#file.digest) / (X#file.length + Z#file.length)
+      end,
+    {Z, Z_Diff}
+            end, Acc),
+  lists:foldl(
+    fun({Z, Z_Diff}, {Y, Y_Diff}) ->
+      if
         X == Y ->
           {Z, Z_Diff};
         Y_Diff > Z_Diff ->
           {Z, Z_Diff};
         Y_Diff =< Z_Diff ->
           {Y, Y_Diff}
-      end,
-  getClosest(X, C, Acc).
+      end
+    end,
+    {X, 0},
+    Y_YDiff_List
+  ).
 
 getName(S) ->
   case string:split(S, ".", trailing) of
